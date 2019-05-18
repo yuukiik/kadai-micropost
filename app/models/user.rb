@@ -26,4 +26,13 @@ class User < ApplicationRecord
   def following?(other_user)
     self.followings.include?(other_user)
   end
+  
+  def feed_microposts
+    # following_ids は User モデルの has_many :followings, ... によって自動的に生成されるメソッドです。
+    # User がフォローしている User の id の配列を取得しています。
+    # 更に、自分自身の self.id もデータ型を合わせるために [self.id] と配列に変換して、追加しています。
+    # 最後に、 Micropost.where(user_id: フォローユーザ + 自分自身) となる Micropost を全て取得しています。
+    Micropost.where(user_id: self.following_ids + [self.id])
+  end
+  
 end

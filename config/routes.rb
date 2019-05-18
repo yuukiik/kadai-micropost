@@ -14,5 +14,6 @@ Rails.application.routes.draw do
   end
 
   resources :microposts, only: [:create, :destroy]
+  # ログインユーザがフォロー/アンフォロー
   resources :relationships, only: [:create, :destroy]
 end
