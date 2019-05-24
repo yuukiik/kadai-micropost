@@ -11,6 +11,10 @@ class User < ApplicationRecord
   has_many :followings, through: :relationships, source: :follow
   has_many :reverses_of_relationship, class_name: 'Relationship', foreign_key: 'follow_id'
   has_many :followers, through: :reverses_of_relationship, source: :user
+  
+  has_many :favorites
+  # micropostを取得
+  has_many :likes, through: :favorites, source: :micropost
 
   def follow(other_user)
     unless self == other_user
@@ -28,11 +32,24 @@ class User < ApplicationRecord
   end
   
   def feed_microposts
-    # following_ids は User モデルの has_many :followings, ... によって自動的に生成されるメソッドです。
-    # User がフォローしている User の id の配列を取得しています。
-    # 更に、自分自身の self.id もデータ型を合わせるために [self.id] と配列に変換して、追加しています。
-    # 最後に、 Micropost.where(user_id: フォローユーザ + 自分自身) となる Micropost を全て取得しています。
     Micropost.where(user_id: self.following_ids + [self.id])
   end
+  
+  # お気に入り追加
+  def favorite(micropost)
+    self.favorites.find_or_create_by(micropost_id: micropost.id)
+  end
+  
+  # お気に入り削除
+  def unfavorite(micropost)
+    favorite = self.favorites.find_by(micropost_id: micropost.id)
+    favorite.destroy if favorite
+  end
+  
+  # micropostが含まれているか
+  def favorite?(micropost)
+    self.likes.include?(micropost)
+  end
+
   
 end
